@@ -4,7 +4,7 @@ project:
 
 website:
   title: "StatsNotes"
-  navbar:
-    left:
-      - href: index.qmd
-        text: Home
+
+format:
+  html:
+    theme: litera
