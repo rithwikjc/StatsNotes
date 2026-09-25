@@ -1,0 +1,7 @@
+---
+title: "StatsNotes"
+---
+
+Notes on statistics and data analysis.
+
+- [Demystifying Bayesian Model Fitting](bayesian-model-fitting/index.qmd)
