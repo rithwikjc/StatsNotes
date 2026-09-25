@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Demystifying Bayesian Model Fitting</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="DemystifyingBayesianModelFitting_files/libs/clipboard/clipboard.min.js"></script>
+<script src="DemystifyingBayesianModelFitting_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="DemystifyingBayesianModelFitting_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="DemystifyingBayesianModelFitting_files/libs/quarto-html/popper.min.js"></script>
+<script src="DemystifyingBayesianModelFitting_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="DemystifyingBayesianModelFitting_files/libs/quarto-html/anchor.min.js"></script>
+<link href="DemystifyingBayesianModelFitting_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="DemystifyingBayesianModelFitting_files/libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="DemystifyingBayesianModelFitting_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="DemystifyingBayesianModelFitting_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="DemystifyingBayesianModelFitting_files/libs/bootstrap/bootstrap-917079515d91bccb85b543faf8aa8bb6.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#scientific-and-statistical-inference-with-bayesian-models" id="toc-scientific-and-statistical-inference-with-bayesian-models" class="nav-link active" data-scroll-target="#scientific-and-statistical-inference-with-bayesian-models">Scientific and statistical inference with Bayesian models</a></li>
+  <li><a href="#from-prior-to-posterior" id="toc-from-prior-to-posterior" class="nav-link" data-scroll-target="#from-prior-to-posterior">From prior to posterior</a>
+  <ul class="collapse">
+  <li><a href="#practically" id="toc-practically" class="nav-link" data-scroll-target="#practically">Practically</a></li>
+  </ul></li>
+  <li><a href="#hypothesis-testing-with-your-posterior-samples" id="toc-hypothesis-testing-with-your-posterior-samples" class="nav-link" data-scroll-target="#hypothesis-testing-with-your-posterior-samples">Hypothesis testing with your posterior samples</a></li>
+  </ul>
+<div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="DemystifyingBayesianModelFitting.pdf"><i class="bi bi-file-pdf"></i>PDF</a></li></ul></div></nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Demystifying Bayesian Model Fitting</h1>
+<p class="subtitle lead">Rithwik · BCS519, Fall 2026</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="scientific-and-statistical-inference-with-bayesian-models" class="level2">
+<h2 class="anchored" data-anchor-id="scientific-and-statistical-inference-with-bayesian-models">Scientific and statistical inference with Bayesian models</h2>
+<!--# (used interchangeably in Bayesian statistics)  -->
+<p>When you specify a model or hypothesis, you are essentially making a claim about the small world of your experiment and the data generated by it. The <em>model formula</em> specifies the relationship you claim between the variables of interest in this world. And the <em>prior</em> specifies your current state of knowledge (or belief) about those relationships. Bayesian model fitting then tells you what the data implies <em>within</em> this small world; whether that tells you anything about the real world is a scientific question, not a statistical one.</p>
+<p>Consider the experimental world in which you hypothesize an effect of hours of sleep on a night on perceptual sensitivity the following day as a linear model. The model formula that describes it is: <span class="math display">\[d' = \beta_0 + \beta_1\times \text{hours\_sleep} + \mathcal{N}(0,\ \sigma)\]</span></p>
+<p>Note that by choosing to model it as a linear model, you get with it all the assumptions made by linear models (normally distributed residuals, homoscedasticity, linear effects, etc).</p>
+<p>The <strong>priors</strong> describe your current beliefs or informational state. This could be well informed or weakly informed (<a href="#fig-prior-uncertainty" class="quarto-xref">Figure&nbsp;1</a>). The priors essentially quantify your uncertainty about the parameters in the experimental world (in the above example, <span class="math inline">\(\beta_0,\ \beta_1,\ \sigma\)</span>).</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-prior-uncertainty" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-prior-uncertainty-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="DemystifyingBayesianModelFitting_files/figure-html/fig-prior-uncertainty-1.png" class="img-fluid figure-img" width="403">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-prior-uncertainty-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Two example priors for the effect of sleep on perceptual sensitivity (<span class="math inline">\(\beta_1\)</span>). The peaked prior, Normal(0.15, 0.05), has most of its probability in a narrow range of values: it expresses a confident, well-informed belief (lower uncertainty). The flat prior, Normal(0, 0.3), spreads its probability over a much wider range: it expresses a weakly informed belief (higher uncertainty). The width (standard deviation) of the prior is what encodes this uncertainty: the wider the distribution, the less you claim to know about <span class="math inline">\(\beta_1\)</span> before seeing the data. The position (mean) of a prior encodes which value you consider most plausible.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>Priors are typically informed by previous research, or can be reasonable guesses based on what you already know about your measures. For example (see <a href="#fig-model-priors" class="quarto-xref">Figure&nbsp;2</a>):</p>
+<ul>
+<li><strong>Perceptual sensitivity</strong> (<span class="math inline">\(d'\)</span>) in tasks calibrated near threshold usually lies between about 0.5 and 2.5; values above 4 means performance is essentially at ceiling. This gives a sensible range for the intercept <span class="math inline">\(\beta_0\)</span>, and we may specify a prior like Normal(1.5, 1).</li>
+<li><strong>Effects</strong> should be scaled to the measure. If <span class="math inline">\(d'\)</span> is around 0.5–2.5, one extra hour of sleep is unlikely to shift it by a full unit; changes of a few tenths are far more plausible. A prior like Normal(0, 0.5) on <span class="math inline">\(\beta_1\)</span> allows for effects of this size in either direction.</li>
+<li><strong>Residual variability</strong> (<span class="math inline">\(\sigma\)</span>) must be positive, and should be on the order of how much <span class="math inline">\(d'\)</span> varies across blocks (a few tenths), not several units. A distribution that is only defined for positive values, like a Half-Normal(0, 0.5), would be a good choice.</li>
+<li><strong>Another example:</strong> reaction times in simple perceptual decision tasks typically fall between about 200 and 1000 ms. If you were modelling reaction times, a prior on the intercept that puts substantial probability below 100 ms or above 3 s is claiming something you already know to be implausible.</li>
+</ul>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-model-priors" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-model-priors-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="DemystifyingBayesianModelFitting_files/figure-html/fig-model-priors-1.png" class="img-fluid figure-img" width="864">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-model-priors-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: The priors for the sleep model’s three parameters. Left: the intercept <span class="math inline">\(\beta_0\)</span>, Normal(1.5, 1). Middle: the sleep effect <span class="math inline">\(\beta_1\)</span>, Normal(0, 0.5). Right: the residual standard deviation <span class="math inline">\(\sigma\)</span>, Half-Normal(0, 0.5), which is zero below 0. See last paragraph for details.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>While Bayesian model fitting packages may provide reasonable defaults, it is always a good exercise to specify your priors yourself. To understand why, it helps to distinguish two kinds of inference. <em>Statistical inference</em> happens inside the model: given the model formula, the priors and the data, Bayes’ theorem mechanically turns the prior into the posterior. This is purely numerical inference. <em>Scientific inference</em> is everything around it: choosing a model formula and priors that reflect your theory and what you already know, and interpreting what the resulting posterior means for that theory. Your model formula and priors are how your scientific knowledge enters the statistical machinery, but scientific inference goes further than that: “the <em>meaning</em> of statistical analysis is not found in the data [or the model], but rather in our theories” - McElreath.<br>
+This document currently does not cover prior selection more broadly (remember weakly regularizing priors and sensitivity analysis; maybe in the future).</p>
+<!--# Alternative quote (verbatim, from the book): "The causal meaning of statistical estimates always depends upon information outside the data." McElreath (2020), Statistical Rethinking, 2nd ed., p. 145 (section 5.2). -->
+</section>
+<section id="from-prior-to-posterior" class="level2">
+<h2 class="anchored" data-anchor-id="from-prior-to-posterior">From prior to posterior</h2>
+<p>Bayesian model fitting is the process of updating the prior (the distribution of parameter values that you thought plausible before seeing the data) in light of the data, using Bayes’ theorem, to obtain the <em>posterior</em> (the distribution of parameter values that remain plausible after seeing the data).</p>
+<p>Conceptually, this works as follows. To keep things simple and easy to visualize, we will only consider the two coefficients (<span class="math inline">\(\beta_0,\ \beta_1\)</span>) and ignore the residual standard deviation (<span class="math inline">\(\sigma\)</span>) for now. Imagine drawing samples from your priors: each time, you draw one value from the prior for <span class="math inline">\(\beta_0\)</span> and one from the prior for <span class="math inline">\(\beta_1\)</span>. Each draw is therefore a pair <span class="math inline">\((\beta_0,\ \beta_1)\)</span>, and each pair describes one hypothetical experimental world. If you repeat this many times, the pairs build up the <em>joint prior distribution</em>: how plausible you consider each combination of intercept and slope before seeing the data (<a href="#fig-joint-prior" class="quarto-xref">Figure&nbsp;3</a>). <!--# Because we specified the two priors independently, this joint distribution is simply the product of the two individual priors. --></p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-joint-prior" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-joint-prior-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="DemystifyingBayesianModelFitting_files/figure-html/fig-joint-prior-1.png" class="img-fluid figure-img" width="556">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-joint-prior-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3: Samples from the priors (4,000 draws). Top: histograms of the <span class="math inline">\(\beta_0\)</span> and <span class="math inline">\(\beta_1\)</span> draws, with the exact prior curves overlaid. Bottom left: the joint prior; each point is one <span class="math inline">\((\beta_0,\ \beta_1)\)</span> draw, so denser regions are combinations drawn more often. Bottom right: 50 of the draws, each shown as the line it implies between hours of sleep and <span class="math inline">\(d'\)</span>. Black points are your experimental data. Many of the prior lines lie far from the data, or predict large negative values, showing that some of your prior beliefs represent very unrealistic predictions of the experimental world.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>Each prior draw is a candidate world: a specific line relating hours of sleep to <span class="math inline">\(d'\)</span>. For each candidate, we can ask: <em>if this were the experimental world, how probable is the data we actually observed?</em> This quantity is the <strong>likelihood</strong>. Lines that pass close to the data points make the observed data quite probable; lines that miss them make it very improbable.</p>
+<p>Bayes’ theorem combines the two sources of information: <span class="math display">\[\underbrace{p(\beta_0, \beta_1 \mid \text{data})}_{\text{posterior}} \;\propto\; \underbrace{p(\text{data} \mid \beta_0, \beta_1)}_{\text{likelihood}} \times \underbrace{p(\beta_0, \beta_1)}_{\text{prior}}\]</span></p>
+<p>In other words: how plausible a candidate world is <em>after</em> seeing the data is proportional to how plausible the candidate world was <em>before</em> (the prior), weighted by how well it predicts the data (the likelihood). Worlds that were plausible to begin with and that predict the data well survive; the rest fade away. What remains is the <strong>posterior</strong> (<a href="#fig-prior-posterior" class="quarto-xref">Figure&nbsp;4</a>).</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-prior-posterior" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-pos="t">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-prior-posterior-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="DemystifyingBayesianModelFitting_files/figure-html/fig-prior-posterior-1.png" class="img-fluid figure-img" data-fig-pos="t" width="556">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-prior-posterior-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;4: From prior (blue) to posterior (orange). Top: the prior and posterior for <span class="math inline">\(\beta_0\)</span> and <span class="math inline">\(\beta_1\)</span>. Bottom left: 4,000 draws from the joint prior and the joint posterior. Bottom right: 50 lines drawn from the prior and from the posterior, with the 20 observations overlaid (black points).
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>As you can see, the data have narrowed down the plausible worlds considerably. The posteriors for <span class="math inline">\(\beta_0\)</span> and <span class="math inline">\(\beta_1\)</span> are much narrower than the priors, and of all the lines the prior allowed, only a narrow bundle passing close to the data remains.</p>
+<section id="practically" class="level3">
+<h3 class="anchored" data-anchor-id="practically">Practically</h3>
+<p>While the above schematic illustrates the idea behind Bayesian model fitting, it is not how model fitting is implemented in practice. Real models usually have many more parameters, and the number of candidate worlds grows exponentially with each one. Even in the simple case above (<a href="#fig-prior-posterior" class="quarto-xref">Figure&nbsp;4</a>), the posterior is much more concentrated than the prior: if you drew candidates from the prior and weighted each one, you would spend most of your time (and computing power) evaluating candidate worlds that are highly implausible given your data. Instead, the posterior is obtained using a family of clever computational algorithms called <strong>Markov chain Monte Carlo (MCMC)</strong>.</p>
+<p>MCMC methods approximate the posterior without ever computing it in full: they only evaluate prior <span class="math inline">\(\times\)</span> likelihood at the parameter values they visit. Each <em>chain</em> works like a walker exploring parameter space: it starts at a random location, and at every step it considers moving to a nearby location. It always moves there if it is more plausible and only sometimes if it is less plausible, and so the chain ends up spending time in each region in proportion to its posterior plausibility<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>. The first steps still reflect the chain’s random starting point, so initial samples from this <em>warm-up</em> period are discarded; the remaining positions are samples from the posterior, like the orange draws in <a href="#fig-prior-posterior" class="quarto-xref">Figure&nbsp;4</a>. <a href="#fig-mcmc-chain" class="quarto-xref">Figure&nbsp;5</a> shows one such chain from our fit.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-mcmc-chain" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-pos="t">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-mcmc-chain-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="DemystifyingBayesianModelFitting_files/figure-html/fig-mcmc-chain-1.png" class="img-fluid figure-img" data-fig-pos="t" width="528">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-mcmc-chain-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;5: One MCMC chain from our model fit, showing the value of <span class="math inline">\(\beta_0\)</span> and <span class="math inline">\(\beta_1\)</span> at each step (iteration). The chain starts at a random point; during warm-up (grey) it moves towards the plausible region and tunes its step size. After the dashed line, the retained samples (orange) wander around the posterior; these are the draws used in <a href="#fig-prior-posterior" class="quarto-xref">Figure&nbsp;4</a>.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>In practice, several chains are run in parallel, each from a different random starting point. If they all end up exploring the same region, that is reassuring evidence that they have found the posterior, and their retained samples are pooled together. Our fit used four chains of 1,000 retained samples each, giving the 4,000 posterior draws in <a href="#fig-prior-posterior" class="quarto-xref">Figure&nbsp;4</a>.</p>
+</section>
+</section>
+<section id="hypothesis-testing-with-your-posterior-samples" class="level2">
+<h2 class="anchored" data-anchor-id="hypothesis-testing-with-your-posterior-samples">Hypothesis testing with your posterior samples</h2>
+<p>The posterior samples you get through MCMC sampling represent your updated beliefs about the parameters in your model. They are not an analytical solution, but literally a collection of samples (<a href="#tbl-posterior-draws" class="quarto-xref">Table&nbsp;1</a>). <em>If</em> the chains have converged, you can treat these samples as a good approximation of the true posterior, and use them to make inferences about the parameters, and hence about the relative plausibility of the candidate worlds.</p>
+<div class="cell">
+<div id="tbl-posterior-draws" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-posterior-draws-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;1: A few posterior samples from our fit (out of 4,000). Each row is one sample from the joint posterior: a combination of parameter values, i.e.&nbsp;one candidate world.
+</figcaption>
+<div aria-describedby="tbl-posterior-draws-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="cell caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: right;"><span class="math inline">\(\beta_0\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(\beta_1\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(\sigma\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">0.961</td>
+<td style="text-align: right;">0.321</td>
+<td style="text-align: right;">0.587</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">0.454</td>
+<td style="text-align: right;">0.365</td>
+<td style="text-align: right;">0.704</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">0.681</td>
+<td style="text-align: right;">0.321</td>
+<td style="text-align: right;">0.635</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">0.282</td>
+<td style="text-align: right;">0.424</td>
+<td style="text-align: right;">0.732</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">1.510</td>
+<td style="text-align: right;">0.225</td>
+<td style="text-align: right;">0.792</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1.460</td>
+<td style="text-align: right;">0.220</td>
+<td style="text-align: right;">0.782</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<p>Before we look at examples, there is one caveat that applies to everything that follows: <strong>every conclusion is conditional</strong> on the model formula (and its assumptions, such as linearity and normally distributed residuals), the priors, and the data. A statement like “there is a 99.9% probability that the effect is positive” means 99.9% <em>under these assumptions</em>.</p>
+<p>Because the posterior is just a collection of samples, most questions you might want to ask about your parameters boil down to <em>counting samples</em>. A useful way to summarize such counts is the <strong>posterior odds</strong> (also called the <em>evidence ratio</em>): how much more plausible a claim is than its alternative. For a claim like “<span class="math inline">\(\beta_1\)</span> is larger than 0.2”, count the samples for which it is true and the samples for which it is false, and divide the first by the second. Posterior odds of 10 mean the claim is 10 times more plausible than its opposite; odds of 1 mean both are equally likely. Alternatively, you can simply compute the probability that your claim is true, the <strong>posterior probability</strong>: in the above example, you can look at what proportion of samples are larger than 0.2. For example, a probability (or proportion) of 91% means that it is 91% likely that <span class="math inline">\(\beta_1\)</span> is larger than 0.2. The two summaries carry the same information: a 91% posterior probability corresponds to posterior odds of about 10 (<span class="math inline">\(\approx\)</span> 91/9).</p>
+<p>Here are a few examples, all about the effect of sleep, <span class="math inline">\(\beta_1\)</span>.</p>
+<p><strong>Is the effect positive?</strong> We usually have expectations about the direction of an effect. The posterior odds can quantify this by comparing the number of samples with a positive <span class="math inline">\(\beta_1\)</span> to the number with a negative <span class="math inline">\(\beta_1\)</span>. Here, 3996 of the 4000 samples (99.9%, sometimes reported as the <em>probability of direction</em>) are positive, giving posterior odds of 999: a positive effect is about 999 times more plausible than a negative one. So it is very likely that more sleep is associated with higher perceptual sensitivity.</p>
+<p><strong>What is the size of the effect?</strong> A natural point estimate is the mean of the samples: 0.30. To express the uncertainty around it, find the narrowest range that contains 95% of the samples: here, 0.11 to 0.47. This is the 95% <em>highest-density interval</em> (HDI), a type of <strong>credible interval</strong>. Every value inside it is more plausible than any value outside it. In a paper, you might report this as: “Each additional hour of sleep was associated with an increase in <span class="math inline">\(d'\)</span> of 0.30 (95% HDI [0.11, 0.47]).”</p>
+<p><strong>Is the effect large enough to matter?</strong> You may also want to know whether the effect size is big enough to be meaningful. Suppose an increase of at least 0.2 in <span class="math inline">\(d'\)</span> per hour of sleep is what you would consider <em>practically significant</em>: large enough to matter in the real world (not the same as statistically significant). In this example, there is an 88% probability that <span class="math inline">\(\beta_1 &gt; 0.2\)</span>, or equivalently posterior odds of about 7: an effect <span class="math inline">\(\beta_1 &gt; 0.2\)</span> is about 7 times more plausible than <span class="math inline">\(\beta_1 &lt; 0.2\)</span>.</p>
+<p><strong>What do we expect for a particular amount of sleep?</strong> The parameters are not always the quantities you care about. For example, you may want to know how well someone is expected to perform after a short night of 5 hours of sleep, which is <span class="math inline">\(\beta_0 + 5 \times \beta_1\)</span>. With posterior samples, you simply compute this for every sample, and the results are samples from the posterior of that quantity. Here, the expected <span class="math inline">\(d'\)</span> after 5 hours of sleep is 2.45 (95% HDI [2.13, 2.80]). The same approach works for any quantity you can compute from the parameters: predictions, differences between conditions, ratios, etc.</p>
+<p><strong>Is there an effect of sleep?</strong> This is the question null hypothesis significance testing (NHST) asks: is <span class="math inline">\(\beta_1\)</span> exactly 0? Among the questions above, this is a rather narrow and uninteresting one: it says nothing about the direction or size of the effect, and the <em>p</em>-value on its own cannot answer those richer questions. For a claim about one exact value like “<span class="math inline">\(\beta_1 = 0\)</span>”, counting does not work (no sample is ever <em>exactly</em> 0). Instead, we use a <strong>Bayes factor</strong>, which compares how well two hypotheses (or models) predicted the data, here “<span class="math inline">\(\beta_1 = 0\)</span>” versus our full model. For a point value hypothesis like this, it can be computed with a mathematical shortcut (the <em>Savage–Dickey</em> method): compare the probability density at that value after seeing the data with the probability density at that value before seeing the data (the posterior versus the prior). In our example, the posterior makes <span class="math inline">\(\beta_1 = 0\)</span> less plausible, with a Bayes factor of 0.042. In other words, after seeing the data, “no effect” is about 24 times less plausible than it was before. Unlike a <em>p</em>-value, this is a statement about the parameter itself, not about how surprising the data would be if the null hypothesis was true. Unlike a <em>p</em>-value, Bayes factor can provide evidence <em>for</em> the null (a Bayes factor above 1 would mean the data made the null <em>more</em> plausible). The frequentist <em>p</em>-value cannot do this; a non-significant result only means the data <em>failed to reject the null</em><a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>. Be aware though, that Bayes factors are sensitive to the priors over your parameters, so more considerations are required when assessing evidence for the null.</p>
+</section>
+
+
+<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p>Those who are interested to know more may read Chapter 9 of <em>Statistical Rethinking</em> by McElreath (2020).<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>An aphorism about this statistical fact goes: “The absence of evidence is not evidence of absence”.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section></div></main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
