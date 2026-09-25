@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Demystifying Bayesian Model Fitting</title>
+<title>Demystifying Bayesian Model Fitting – StatsNotes</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -29,17 +29,50 @@ ul.task-list li input[type="checkbox"] {
 </style>
 
 
-<script src="DemystifyingBayesianModelFitting_files/libs/clipboard/clipboard.min.js"></script>
-<script src="DemystifyingBayesianModelFitting_files/libs/quarto-html/quarto.js" type="module"></script>
-<script src="DemystifyingBayesianModelFitting_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="DemystifyingBayesianModelFitting_files/libs/quarto-html/popper.min.js"></script>
-<script src="DemystifyingBayesianModelFitting_files/libs/quarto-html/tippy.umd.min.js"></script>
-<script src="DemystifyingBayesianModelFitting_files/libs/quarto-html/anchor.min.js"></script>
-<link href="DemystifyingBayesianModelFitting_files/libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="DemystifyingBayesianModelFitting_files/libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="DemystifyingBayesianModelFitting_files/libs/bootstrap/bootstrap.min.js"></script>
-<link href="DemystifyingBayesianModelFitting_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="DemystifyingBayesianModelFitting_files/libs/bootstrap/bootstrap-917079515d91bccb85b543faf8aa8bb6.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-ba8f7c244c1f50cbf6c6a3aa3874339a.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
   <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
@@ -73,12 +106,41 @@ window.Quarto = {
 
 </head>
 
-<body class="quarto-light">
+<body class="nav-fixed quarto-light">
 
-<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
-<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-  <nav id="TOC" role="doc-toc" class="toc-active">
-    <h2 id="toc-title">Table of contents</h2>
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">StatsNotes</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
    
   <ul>
   <li><a href="#scientific-and-statistical-inference-with-bayesian-models" id="toc-scientific-and-statistical-inference-with-bayesian-models" class="nav-link active" data-scroll-target="#scientific-and-statistical-inference-with-bayesian-models">Scientific and statistical inference with Bayesian models</a></li>
@@ -88,8 +150,9 @@ window.Quarto = {
   </ul></li>
   <li><a href="#hypothesis-testing-with-your-posterior-samples" id="toc-hypothesis-testing-with-your-posterior-samples" class="nav-link" data-scroll-target="#hypothesis-testing-with-your-posterior-samples">Hypothesis testing with your posterior samples</a></li>
   </ul>
-<div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="DemystifyingBayesianModelFitting.pdf"><i class="bi bi-file-pdf"></i>PDF</a></li></ul></div></nav>
-</div>
+<div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="index.pdf"><i class="bi bi-file-pdf"></i>PDF</a></li></ul></div></nav>
+    </div>
+<!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
@@ -124,7 +187,7 @@ window.Quarto = {
 <div id="fig-prior-uncertainty" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-prior-uncertainty-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="DemystifyingBayesianModelFitting_files/figure-html/fig-prior-uncertainty-1.png" class="img-fluid figure-img" width="403">
+<img src="index_files/figure-html/fig-prior-uncertainty-1.png" class="img-fluid figure-img" width="403">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-prior-uncertainty-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;1: Two example priors for the effect of sleep on perceptual sensitivity (<span class="math inline">\(\beta_1\)</span>). The peaked prior, Normal(0.15, 0.05), has most of its probability in a narrow range of values: it expresses a confident, well-informed belief (lower uncertainty). The flat prior, Normal(0, 0.3), spreads its probability over a much wider range: it expresses a weakly informed belief (higher uncertainty). The width (standard deviation) of the prior is what encodes this uncertainty: the wider the distribution, the less you claim to know about <span class="math inline">\(\beta_1\)</span> before seeing the data. The position (mean) of a prior encodes which value you consider most plausible.
@@ -145,7 +208,7 @@ Figure&nbsp;1: Two example priors for the effect of sleep on perceptual sensitiv
 <div id="fig-model-priors" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-model-priors-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="DemystifyingBayesianModelFitting_files/figure-html/fig-model-priors-1.png" class="img-fluid figure-img" width="864">
+<img src="index_files/figure-html/fig-model-priors-1.png" class="img-fluid figure-img" width="864">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-model-priors-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;2: The priors for the sleep model’s three parameters. Left: the intercept <span class="math inline">\(\beta_0\)</span>, Normal(1.5, 1). Middle: the sleep effect <span class="math inline">\(\beta_1\)</span>, Normal(0, 0.5). Right: the residual standard deviation <span class="math inline">\(\sigma\)</span>, Half-Normal(0, 0.5), which is zero below 0. See last paragraph for details.
@@ -167,7 +230,7 @@ This document currently does not cover prior selection more broadly (remember we
 <div id="fig-joint-prior" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-joint-prior-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="DemystifyingBayesianModelFitting_files/figure-html/fig-joint-prior-1.png" class="img-fluid figure-img" width="556">
+<img src="index_files/figure-html/fig-joint-prior-1.png" class="img-fluid figure-img" width="556">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-joint-prior-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;3: Samples from the priors (4,000 draws). Top: histograms of the <span class="math inline">\(\beta_0\)</span> and <span class="math inline">\(\beta_1\)</span> draws, with the exact prior curves overlaid. Bottom left: the joint prior; each point is one <span class="math inline">\((\beta_0,\ \beta_1)\)</span> draw, so denser regions are combinations drawn more often. Bottom right: 50 of the draws, each shown as the line it implies between hours of sleep and <span class="math inline">\(d'\)</span>. Black points are your experimental data. Many of the prior lines lie far from the data, or predict large negative values, showing that some of your prior beliefs represent very unrealistic predictions of the experimental world.
@@ -184,7 +247,7 @@ Figure&nbsp;3: Samples from the priors (4,000 draws). Top: histograms of the <sp
 <div id="fig-prior-posterior" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-pos="t">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-prior-posterior-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="DemystifyingBayesianModelFitting_files/figure-html/fig-prior-posterior-1.png" class="img-fluid figure-img" data-fig-pos="t" width="556">
+<img src="index_files/figure-html/fig-prior-posterior-1.png" class="img-fluid figure-img" data-fig-pos="t" width="556">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-prior-posterior-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;4: From prior (blue) to posterior (orange). Top: the prior and posterior for <span class="math inline">\(\beta_0\)</span> and <span class="math inline">\(\beta_1\)</span>. Bottom left: 4,000 draws from the joint prior and the joint posterior. Bottom right: 50 lines drawn from the prior and from the posterior, with the 20 observations overlaid (black points).
@@ -203,7 +266,7 @@ Figure&nbsp;4: From prior (blue) to posterior (orange). Top: the prior and poste
 <div id="fig-mcmc-chain" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-pos="t">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-mcmc-chain-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="DemystifyingBayesianModelFitting_files/figure-html/fig-mcmc-chain-1.png" class="img-fluid figure-img" data-fig-pos="t" width="528">
+<img src="index_files/figure-html/fig-mcmc-chain-1.png" class="img-fluid figure-img" data-fig-pos="t" width="528">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-mcmc-chain-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;5: One MCMC chain from our model fit, showing the value of <span class="math inline">\(\beta_0\)</span> and <span class="math inline">\(\beta_1\)</span> at each step (iteration). The chain starts at a random point; during warm-up (grey) it moves towards the plausible region and tunes its step size. After the dashed line, the retained samples (orange) wander around the posterior; these are the draws used in <a href="#fig-prior-posterior" class="quarto-xref">Figure&nbsp;4</a>.
@@ -280,6 +343,8 @@ Table&nbsp;1: A few posterior samples from our fit (out of 4,000). Each row is o
 <p><strong>Is the effect large enough to matter?</strong> You may also want to know whether the effect size is big enough to be meaningful. Suppose an increase of at least 0.2 in <span class="math inline">\(d'\)</span> per hour of sleep is what you would consider <em>practically significant</em>: large enough to matter in the real world (not the same as statistically significant). In this example, there is an 88% probability that <span class="math inline">\(\beta_1 &gt; 0.2\)</span>, or equivalently posterior odds of about 7: an effect <span class="math inline">\(\beta_1 &gt; 0.2\)</span> is about 7 times more plausible than <span class="math inline">\(\beta_1 &lt; 0.2\)</span>.</p>
 <p><strong>What do we expect for a particular amount of sleep?</strong> The parameters are not always the quantities you care about. For example, you may want to know how well someone is expected to perform after a short night of 5 hours of sleep, which is <span class="math inline">\(\beta_0 + 5 \times \beta_1\)</span>. With posterior samples, you simply compute this for every sample, and the results are samples from the posterior of that quantity. Here, the expected <span class="math inline">\(d'\)</span> after 5 hours of sleep is 2.45 (95% HDI [2.13, 2.80]). The same approach works for any quantity you can compute from the parameters: predictions, differences between conditions, ratios, etc.</p>
 <p><strong>Is there an effect of sleep?</strong> This is the question null hypothesis significance testing (NHST) asks: is <span class="math inline">\(\beta_1\)</span> exactly 0? Among the questions above, this is a rather narrow and uninteresting one: it says nothing about the direction or size of the effect, and the <em>p</em>-value on its own cannot answer those richer questions. For a claim about one exact value like “<span class="math inline">\(\beta_1 = 0\)</span>”, counting does not work (no sample is ever <em>exactly</em> 0). Instead, we use a <strong>Bayes factor</strong>, which compares how well two hypotheses (or models) predicted the data, here “<span class="math inline">\(\beta_1 = 0\)</span>” versus our full model. For a point value hypothesis like this, it can be computed with a mathematical shortcut (the <em>Savage–Dickey</em> method): compare the probability density at that value after seeing the data with the probability density at that value before seeing the data (the posterior versus the prior). In our example, the posterior makes <span class="math inline">\(\beta_1 = 0\)</span> less plausible, with a Bayes factor of 0.042. In other words, after seeing the data, “no effect” is about 24 times less plausible than it was before. Unlike a <em>p</em>-value, this is a statement about the parameter itself, not about how surprising the data would be if the null hypothesis was true. Unlike a <em>p</em>-value, Bayes factor can provide evidence <em>for</em> the null (a Bayes factor above 1 would mean the data made the null <em>more</em> plausible). The frequentist <em>p</em>-value cannot do this; a non-significant result only means the data <em>failed to reject the null</em><a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>. Be aware though, that Bayes factors are sensitive to the priors over your parameters, so more considerations are required when assessing evidence for the null.</p>
+
+
 </section>
 
 
@@ -289,8 +354,7 @@ Table&nbsp;1: A few posterior samples from our fit (out of 4,000). Each row is o
 <li id="fn1"><p>Those who are interested to know more may read Chapter 9 of <em>Statistical Rethinking</em> by McElreath (2020).<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn2"><p>An aphorism about this statistical fact goes: “The absence of evidence is not evidence of absence”.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
-</section></div></main>
-<!-- /main column -->
+</section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
     const icon = "";
@@ -364,7 +428,7 @@ Table&nbsp;1: A few posterior samples from our fit (out of 4,000). Each row is o
     }
       var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
       var mailtoRegex = new RegExp(/^mailto:/);
-        var filterRegex = new RegExp('/' + window.location.host + '/');
+        var filterRegex = new RegExp("https:\/\/rithwikjc\.github\.io\/StatsNotes\/");
       var isInternal = (href) => {
           return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
       }
