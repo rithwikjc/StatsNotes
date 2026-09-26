@@ -1,6 +1,8 @@
 ---
 title: "Demystifying Bayesian Model Fitting"
 subtitle: "Rithwik · BCS519, Fall 2026"
+date: today   # render date, shown as "Last updated ..."
+date-format: "[Last updated:] MMMM D, YYYY"
 format:
   html:
     code-fold: false
@@ -12,6 +14,7 @@ format:
       text: |
         \setcapindent{0em}
         \addtokomafont{disposition}{\rmfamily}
+        \setkomafont{date}{\vspace*{-3.1em}\footnotesize\color{gray}}
         \AtBeginDocument{\let\oldtoc\tableofcontents\renewcommand{\tableofcontents}{\vspace{-4em}\oldtoc}}
 execute:
   cache: false     # off: the brms fit is saved via brm(file = ...), and chunk caching can serve stale results
@@ -156,7 +159,7 @@ Conceptually, this works as follows. To keep things simple and easy to visualize
 #| label: fig-joint-prior
 #| fig-width: 5.8
 #| fig-height: 4.6
-#| fig-cap: "Samples from the priors (4,000 draws). Top: histograms of the $\\beta_0$ and $\\beta_1$ draws, with the exact prior curves overlaid. Bottom left: the joint prior; each point is one $(\\beta_0,\\ \\beta_1)$ draw, so denser regions are combinations drawn more often. Bottom right: 50 of the draws, each shown as the line it implies between hours of sleep and $d'$. Black points are your experimental data. Many of the prior lines lie far from the data, or predict large negative values, showing that some of your prior beliefs represent very unrealistic predictions of the experimental world."
+#| fig-cap: "Samples from the priors (4000 draws). Top: histograms of the $\\beta_0$ and $\\beta_1$ draws, with the exact prior curves overlaid. Bottom left: the joint prior; each point is one $(\\beta_0,\\ \\beta_1)$ draw, so denser regions are combinations drawn more often. Bottom right: 50 of the draws, each shown as the line it implies between hours of sleep and $d'$. Black points are your experimental data. Many of the prior lines lie far from the data, or predict large negative values, showing that some of your prior beliefs represent very unrealistic predictions of the experimental world."
 library(patchwork)
 prior_draws <- as_draws_df(sleep_fit)
 prior_draws <- data.frame(b0 = prior_draws$prior_b_Intercept,
@@ -205,7 +208,7 @@ In other words: how plausible a candidate world is *after* seeing the data is pr
 #| fig-pos: "t"   # for rendering at top of a page rather than mid-text
 #| fig-width: 5.8
 #| fig-height: 4.6
-#| fig-cap: "From prior (blue) to posterior (orange). Top: the prior and posterior for $\\beta_0$ and $\\beta_1$. Bottom left: 4,000 draws from the joint prior and the joint posterior. Bottom right: 50 lines drawn from the prior and from the posterior, with the 20 observations overlaid (black points)."
+#| fig-cap: "From prior (blue) to posterior (orange). Top: the prior and posterior for $\\beta_0$ and $\\beta_1$. Bottom left: 4000 draws from the joint prior and the joint posterior. Bottom right: 50 lines drawn from the prior and from the posterior, with the 20 observations overlaid (black points)."
 draws <- as_draws_df(sleep_fit)
 pp <- rbind(
   data.frame(b0 = draws$prior_b_Intercept, b1 = draws$prior_b_hours_sleep, dist = "Prior"),
@@ -292,7 +295,7 @@ chain_row("beta[0]", expression(beta[0])) / chain_row("beta[1]", expression(beta
   plot_layout(guides = "collect") & theme(legend.position = "top")
 ```
 
-In practice, several chains are run in parallel, each from a different random starting point. If they all end up exploring the same region, that is reassuring evidence that they have found the posterior, and their retained samples are pooled together. Our fit used four chains of 1,000 retained samples each, giving the 4,000 posterior draws in @fig-prior-posterior.
+In practice, several chains are run in parallel, each from a different random starting point. If they all end up exploring the same region, that is reassuring evidence that they have found the posterior, and their retained samples are pooled together. Our fit used four chains of 1000 retained samples each, giving the 4000 posterior draws in @fig-prior-posterior.
 
 ## Hypothesis testing with your posterior samples
 
@@ -301,7 +304,7 @@ The posterior samples you get through MCMC sampling represent your updated belie
 ```{r}
 #| echo: false
 #| label: tbl-posterior-draws
-#| tbl-cap: "A few posterior samples from our fit (out of 4,000). Each row is one sample from the joint posterior: a combination of parameter values, i.e. one candidate world."
+#| tbl-cap: "A few posterior samples from our fit (out of 4000). Each row is one sample from the joint posterior: a combination of parameter values, i.e. one candidate world."
 posterior_draws <- as_draws_df(sleep_fit)
 knitr::kable(head(as.data.frame(posterior_draws[, c("b_Intercept", "b_hours_sleep", "sigma")])),
              digits = 3, col.names = c("$\\beta_0$", "$\\beta_1$", "$\\sigma$"))
@@ -309,13 +312,16 @@ knitr::kable(head(as.data.frame(posterior_draws[, c("b_Intercept", "b_hours_slee
 
 Before we look at examples, there is one caveat that applies to everything that follows: **every conclusion is conditional** on the model formula (and its assumptions, such as linearity and normally distributed residuals), the priors, and the data. A statement like "there is a 99.9% probability that the effect is positive" means 99.9% *under these assumptions*.
 
-Because the posterior is just a collection of samples, most questions you might want to ask about your parameters boil down to *counting samples*. A useful way to summarize such counts is the **posterior odds** (also called the *evidence ratio*): how much more plausible a claim is than its alternative. For a claim like "$\beta_1$ is larger than 0.2", count the samples for which it is true and the samples for which it is false, and divide the first by the second. Posterior odds of 10 mean the claim is 10 times more plausible than its opposite; odds of 1 mean both are equally likely. Alternatively, you can simply compute the probability that your claim is true, the **posterior probability**: in the above example, you can look at what proportion of samples are larger than 0.2. For example, a probability (or proportion) of 91% means that it is 91% likely that $\beta_1$ is larger than 0.2. The two summaries carry the same information: a 91% posterior probability corresponds to posterior odds of about 10 ($\approx$ 91/9).
-
-Here are a few examples, all about the effect of sleep, $\beta_1$.
-
 ```{r}
 #| echo: false
 b1 <- posterior_draws$b_hours_sleep
+# counting example: beta_1 > threshold (change it here; text and figure follow)
+threshold  <- 0.15
+n_above    <- sum(b1 > threshold)
+n_below    <- sum(b1 <= threshold)
+pct_above  <- round(100 * n_above / length(b1))
+pct_below  <- 100 - pct_above
+odds_above <- round(n_above / n_below)
 h_zero     <- hypothesis(sleep_fit, "hours_sleep = 0")$hypothesis
 h_large    <- hypothesis(sleep_fit, "hours_sleep > 0.2")$hypothesis
 hdi_b1     <- sprintf("%.2f", HDInterval::hdi(b1, credMass = 0.95))
@@ -324,7 +330,35 @@ pred_5h    <- posterior_draws$b_Intercept + 5 * b1
 hdi_pred_5h <- sprintf("%.2f", HDInterval::hdi(pred_5h))
 ```
 
-**Is the effect positive?** We usually have expectations about the direction of an effect. The posterior odds can quantify this by comparing the number of samples with a positive $\beta_1$ to the number with a negative $\beta_1$. Here, `r sum(b1 > 0)` of the `r length(b1)` samples (`r round(100 * mean(b1 > 0), 1)`%, sometimes reported as the *probability of direction*) are positive, giving posterior odds of `r round(sum(b1 > 0) / sum(b1 < 0))`: a positive effect is about `r round(sum(b1 > 0) / sum(b1 < 0))` times more plausible than a negative one. So it is very likely that more sleep is associated with higher perceptual sensitivity.
+Because the posterior is just a collection of samples, most questions you might want to ask about your parameters boil down to *counting samples*. For any claim about the parameters, the proportion of samples for which it is true is its **posterior probability**. For example, `r n_above` of our 4000 samples or `r pct_above`% have $\beta_1 > `r threshold`$, so there is a `r pct_above`% probability that each extra hour of sleep increases $d'$ by more than `r threshold` (@fig-posterior-threshold). Another way to summarize the evidence is the **posterior odds** (also called the **evidence ratio**): the number of samples for which the claim is true divided by the number for which it is false. Here, `r pct_above`% of samples (`r n_above`) have $\beta_1 > `r threshold`$ and `r pct_below`% (`r n_below`) have $\beta_1 \leq `r threshold`$, giving posterior odds of about `r odds_above` (`r pct_above`/`r pct_below`). That is, $\beta_1 > `r threshold`$ is about `r odds_above` times more plausible than its alternative $\beta_1 \le `r threshold`$. Posterior odds of 1 would mean both are equally likely. As you can see, these two summaries essentially carry the same information: the posterior odds is just the posterior probability that the claim is true divided by the posterior probability that it is false (@fig-posterior-threshold).
+
+```{r}
+#| echo: false
+#| label: fig-posterior-threshold
+#| fig-width: 4.5
+#| fig-height: 2.8
+#| fig-cap: !expr 'paste0("Histogram of the ", length(b1), " posterior samples of $\\beta_1$. The dashed line marks $\\beta_1 = ", threshold, "$. The orange bars are the ", n_above, " samples with $\\beta_1 > ", threshold, "$, corresponding to a posterior probability of ", pct_above, "%. The grey bars are the ", n_below, " samples with $\\beta_1 \\le ", threshold, "$ (posterior probability of ", pct_below, "%). The posterior odds are the ratio of the two counts or posterior probabilities: ", n_above, "/", n_below, " $\\approx$ ", pct_above, "/", pct_below, " = ", odds_above, ".")'
+# bins of width 0.02, with one bin edge exactly at the threshold
+breaks <- seq(threshold - 0.02 * ceiling((threshold - min(b1)) / 0.02), max(b1) + 0.02, by = 0.02)
+h <- hist(b1, breaks = breaks, plot = FALSE)
+bars <- data.frame(mid = h$mids, count = h$counts,
+                   side = ifelse(h$mids > threshold, "above", "below"))
+
+ggplot(bars, aes(mid, count, fill = side)) +
+  geom_col(width = 0.02, colour = "white", linewidth = 0.2) +
+  geom_vline(xintercept = threshold, linetype = "dashed") +
+  annotate("text", x = threshold + 0.03, y = max(bars$count) * 0.9, hjust = 0, size = 3.5,
+           label = paste0(pct_above, "%")) +
+  annotate("text", x = threshold - 0.03, y = max(bars$count) * 0.9, hjust = 1, size = 3.5,
+           label = paste0(pct_below, "%")) +
+  scale_fill_manual(values = c(above = "#E69F00", below = "grey60"), guide = "none") +
+  labs(x = expression(beta[1]), y = "Number of samples") +
+  theme_minimal(base_size = 11)
+```
+
+Here are a few examples, all about the effect of sleep, $\beta_1$.
+
+**Is the effect positive?** We usually have expectations about the direction of an effect. The posterior odds can quantify this by comparing the number of samples with a positive $\beta_1$ to the number with a negative $\beta_1$. Here, `r sum(b1 > 0)` of the 4000 samples (`r round(100 * mean(b1 > 0), 1)`%, sometimes reported as the *probability of direction*) are positive, giving posterior odds of `r round(sum(b1 > 0) / sum(b1 < 0))`: a positive effect is about `r round(sum(b1 > 0) / sum(b1 < 0))` times more plausible than a negative one. So it is very likely that more sleep is associated with higher perceptual sensitivity.
 
 **What is the size of the effect?** A natural point estimate is the mean of the samples: `r sprintf("%.2f", mean(b1))`. To express the uncertainty around it, find the narrowest range that contains 95% of the samples: here, `r hdi_b1[1]` to `r hdi_b1[2]`. This is the 95% *highest-density interval* (HDI), a type of **credible interval**. Every value inside it is more plausible than any value outside it. In a paper, you might report this as: "Each additional hour of sleep was associated with an increase in $d'$ of `r sprintf("%.2f", mean(b1))` (95% HDI \[`r hdi_b1[1]`, `r hdi_b1[2]`\])."
 
@@ -335,3 +369,11 @@ hdi_pred_5h <- sprintf("%.2f", HDInterval::hdi(pred_5h))
 **Is there an effect of sleep?** This is the question null hypothesis significance testing (NHST) asks: is $\beta_1$ exactly 0? Among the questions above, this is a rather narrow and uninteresting one: it says nothing about the direction or size of the effect, and the *p*-value on its own cannot answer those richer questions. For a claim about one exact value like "$\beta_1 = 0$", counting does not work (no sample is ever *exactly* 0). Instead, we use a **Bayes factor**, which compares how well two hypotheses (or models) predicted the data, here "$\beta_1 = 0$" versus our full model. For a point value hypothesis like this, it can be computed with a mathematical shortcut (the *Savage–Dickey* method): compare the probability density at that value after seeing the data with the probability density at that value before seeing the data (the posterior versus the prior). In our example, the posterior makes $\beta_1 = 0$ less plausible, with a Bayes factor of `r sprintf("%.3f", h_zero$Evid.Ratio)`. In other words, after seeing the data, "no effect" is about `r round(1 / h_zero$Evid.Ratio)` times less plausible than it was before. Unlike a *p*-value, this is a statement about the parameter itself, not about how surprising the data would be if the null hypothesis was true. Unlike a *p*-value, Bayes factor can provide evidence *for* the null (a Bayes factor above 1 would mean the data made the null *more* plausible). The frequentist *p*-value cannot do this; a non-significant result only means the data *failed to reject the null*[^2]. Be aware though, that Bayes factors are sensitive to the priors over your parameters, so more considerations are required when assessing evidence for the null.
 
 [^2]: An aphorism about this statistical fact goes: "The absence of evidence is not evidence of absence".
+
+### From numbers to words
+
+Every analysis eventually has to be expressed in words: a conclusion you write in a paper or say in a talk or in a conversation with a colleague. This translation from numerical inference to scientific interpretation is where much of the information in an analysis gets lost.
+
+NHST, as it is usually practiced, makes the translation binary. A *p*-value below 0.05 becomes "a significant effect", one above it becomes "no significant effect". This in practice often gets interpreted as "the effect exists" and "the effect does not exist". But *p* = 0.049 and *p* = 0.051 carry almost the same evidence, and the 0.05 cutoff is purely a convention (note that this is not an inherent limitation of the frequentist framework, but a result of built up systemic traditions and conventions in science). This issue is compounded by the non-intuitive meaning of the *p*-value (probability of observing data at least as extreme as your sample if the null hypothesis was true), and by its dependence on the researcher's intentions (testing and stopping intentions prior to statistical analysis), making it hard to reason about the strength of evidence in a transparent manner.
+
+The Bayesian framework, with the posterior, makes more intuitive graded language available. In our example, there is a `r round(100 * mean(b1 > 0), 1)`% probability that the effect is positive, a `r pct_above`% probability that it exceeds `r threshold`, and an `r round(100 * h_large$Post.Prob)`% probability that it exceeds 0.2. Each supports a statement of a different strength: the effect is almost certainly positive, very likely larger than `r threshold`, and probably, but not certainly, larger than 0.2. You can report the evidence at the strength it actually has, and readers can judge it by their own standards very intuitively. This clear intuition is enabled by the philosophy of the Bayesian framework, that you maintain beliefs of the relative plausibility of possibilities, and update them with observations in a principled manner. Note that verbal labels for Bayes factors do exist (such as "moderate" or "strong" evidence), but they are rough guides with no rigid conventions in place (yet). Switching to the Bayesian framework is an opportunity to avoid the trap of conventions such as hard cutoffs which would bring back the same black-and-white thinking problem that plagues the frequentist framework.
