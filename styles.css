@@ -1,0 +1,14 @@
+/* Title block: subtitle and "Last updated" date under the title */
+.quarto-title .subtitle { font-size: 1.05rem; margin-bottom: 0; padding-top: 0.25rem; }
+#title-block-header.quarto-title-block.default .quarto-title-meta {
+  display: block !important;   /* Quarto lays this out as a grid by default */
+  margin-top: 0;
+}
+.quarto-title-meta-heading { display: none; }   /* hide the "Published" label */
+.quarto-title-meta .date {
+  font-family: var(--bs-font-sans-serif);        /* same font as title and subtitle */
+  font-size: 0.875rem;
+  font-weight: 300;
+  color: #a0a0a0;
+  margin: 0;
+}
