@@ -1,0 +1,32 @@
+---
+title: "Linear regression by likelihood maximization"
+date: today   # render date, shown as "Last updated ..."
+date-format: "[Last updated:] MMMM D, YYYY"
+engine: markdown   # this page runs no R chunks itself; the app runs in the browser
+filters:
+  - shinylive      # turns the {shinylive-r} block below into a live app
+---
+
+Fitting a model means finding the parameters that make the observed data most
+likely. Try it yourself: drag the sliders to fit a line to the data. \
+The app runs in your browser and takes a few seconds to load. It is an [R Shiny](https://shiny.posit.co/) app,
+and can be run [locally](#run-the-app-on-your-own-computer) (on your computer) for a smoother experience.
+
+<!-- The app block. "include" pulls in the app's two files, so the page always
+     shows the current code. column-screen-inset makes it nearly full width. -->
+
+::: {.column-screen-inset}
+```{shinylive-r}
+#| standalone: true
+#| viewerHeight: 970
+## file: app.R
+{{< include app.R >}}
+
+## file: likelihood.R
+{{< include likelihood.R >}}
+```
+:::
+
+<!-- How to run the app locally. Lives in README.md, so GitHub shows it too. -->
+
+{{< include README.md >}}

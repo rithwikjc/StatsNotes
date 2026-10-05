@@ -5,3 +5,4 @@ title: "StatsNotes"
 Notes on statistics and data analysis.
 
 - [Demystifying Bayesian Model Fitting](bayesian-model-fitting/index.qmd)
+- [Linear regression by likelihood maximization](likelihood-fitting/index.qmd)
